@@ -2,27 +2,27 @@ const request = require("supertest");
 const buildApp = require("../../app");
 const UserRepo = require("../../repos/user-repo");
 const pool = require("../../pool");
+const Context = require("../context");
 
-beforeAll(() => {
-  return pool.connect({
-    host: "localhost",
-    port: 5432,
-    database: "training-test",
-    user: "postgres",
-    password: "postgres",
-  });
+let context;
+beforeAll(async () => {
+  context = await Context.build();
+});
+
+beforeEach(async () => {
+  await context.reset();
 });
 
 afterAll(() => {
-  return pool.close();
+  return context.close();
 });
 
 it("create a user", async () => {
   const startingCount = await UserRepo.count();
 
   await request(buildApp())
-    .post("/api/users")
-    .send({ username: "user", bio: "bio" })
+    .post("/users")
+    .send({ username: "userTest", bio: "test bio" })
     .expect(200);
 
   const finishCount = await UserRepo.count();
